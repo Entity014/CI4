@@ -12,7 +12,7 @@ X_mean = np.mean(X, axis=0)
 X_std = np.std(X, axis=0)
 X_scaled = (X - X_mean) / X_std
 
-hidden_layer = [20]
+hidden_layer = [1]
 
 
 class MLP:
@@ -35,15 +35,6 @@ class MLP:
             X = self.relu(np.dot(X, weight))
             self.layers.append(X)
         return X
-
-    def linear(self, x):
-        return x
-
-    def tanh(self, x):
-        return np.tanh(x)
-
-    def sigmoid(self, x):
-        return 1 / (1 + np.exp(-x))
 
     def relu(self, x):
         return np.maximum(0, x)
@@ -126,14 +117,25 @@ for fold in range(num_folds):
 average_mae = np.mean(mae_results)
 print(f"Average Mean Absolute Error across all folds: {average_mae}")
 
+# Plotting MAE for each fold
+plt.figure(figsize=(10, 5))
+plt.plot(range(1, num_folds + 1), mae_results, marker="o", linestyle="-", color="b")
+plt.title("Mean Absolute Error for Each Fold")
+plt.xlabel("Fold Number")
+plt.ylabel("Mean Absolute Error")
+plt.xticks(range(1, num_folds + 1))
+plt.grid()
+plt.savefig(f"mae_per_fold_{hidden_layer[0]}_{average_mae}.png")  # Save the MAE plot
+plt.show()
+
 # Best weights after final training on the entire dataset
 best_weights = pso(X_scaled, y, num_particles=15, num_iterations=200)
 final_mlp = MLP(X_scaled.shape[1], hidden_layer, 1)
 final_mlp.weights = best_weights
 y_pred_all = final_mlp.predict(X_scaled)
 
-# Path where you want to save the graph
-output_path = f"benzene_concentration_{hidden_layer[0]}_{average_mae}.png"  # Change this to your desired file path
+# Path where you want to save the graph for actual vs predicted
+output_path = f"benzene_concentration_{hidden_layer[0]}_{average_mae}.png"
 
 plt.figure(figsize=(12, 6))
 plt.plot(y, label="Actual Benzene Concentration", color="blue", alpha=0.5)
